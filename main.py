@@ -3,8 +3,8 @@ import sys
 import pygame
 import geocoder
 from static_map import request_static_map
-LAT_STEP = 0.002  # Шаги при движении карты по широте и долготе
-LON_STEP = 0.008
+LAT_STEP = 0.008  # Шаги при движении карты по широте и долготе
+LON_STEP = 0.002
 
 class MapParams(object):
     """
@@ -12,10 +12,10 @@ class MapParams(object):
     """
     def __init__(self):
         # Параметры по умолчанию.
-        self.lon = '60.800113'
-        self.lat = '40.803504'
+        self.lon = '37.620070'
+        self.lat = '55.753630'
         self.delta = None
-        self.zoom = '2'
+        self.zoom = '7'
         self.type = "map"
         self.search_result = None  # Найденный объект для отображения на карте.
         self.use_postal_code = False
@@ -23,12 +23,12 @@ class MapParams(object):
     def update(self, event):
         if event.key == pygame.K_LEFT:
             self.lon = str(float(self.lon) - LON_STEP * 2 ** (15 - float(self.zoom)))
-        if event.key == pygame.K_RIGHT:
-            self.lon = str(float(self.lon) + LON_STEP * 2 ** (15 - float(self.zoom)))
         if event.key == pygame.K_UP:
-            self.lat = str(float(self.lat) + LAT_STEP * 2 ** (15 - float(self.zoom)))
+            if int(self.zoom) < 23:
+                self.zoom = str(int(self.zoom) + 1)
         if event.key == pygame.K_DOWN:
-            self.lat = str(float(self.lat) - LAT_STEP * 2 ** (15 - float(self.zoom)))
+            if int(self.zoom) > 0:
+                self.zoom = str(int(self.zoom) - 1)
 
     def search_toponym(self, address):
         code, toponym = geocoder.request_toponym(address)
@@ -57,17 +57,13 @@ class App:
         sys.exit()
 
     def load_image(self, mp):
+
         coords = mp.lon, mp.lat
-        if not 0 < float(coords[0]) < 180 or not 0 < float(coords[1]) < 180:
-            coords = ('1', '1')
         delta = mp.delta
         z = mp.zoom
         type = mp.type
         map_file = request_static_map(coords, delta, z, type)
-        try:
-            map = pygame.image.load(map_file)
-        except Exception:
-            print('еверный формат координат', coords)
+        map = pygame.image.load(map_file)
 
         image = pygame.Surface(self.screen.get_size())
         image.fill(pygame.Color("lightblue"))
